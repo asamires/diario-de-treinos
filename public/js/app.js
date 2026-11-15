@@ -1,5 +1,3 @@
-
-// Elementos do formulário
 const formTreino = document.getElementById("formTreino");
 const tipo = document.getElementById("tipo");
 const nome = document.getElementById("nome");
@@ -11,212 +9,158 @@ const quantidadeSeries = document.getElementById("quantidadeSeries");
 const listaSeries = document.getElementById("listaSeries");
 const listaTreinos = document.getElementById("listaTreinos");
 
-// Recupera os exercícios que já foram salvos
-let treinos = JSON.parse(localStorage.getItem("treinos")) || [];
+// 1. Alterna os campos visíveis conforme o tipo de exercício
+tipo.addEventListener("change", () => {
+  camposSeries.style.display = "none";
+  camposCardio.style.display = "none";
+  listaSeries.innerHTML = "";
+  quantidadeSeries.value = "";
 
-// Mostra os campos conforme o tipo escolhido
-tipo.addEventListener("change", function () {
-    camposSeries.style.display = "none";
-    camposCardio.style.display = "none";
-
-    listaSeries.innerHTML = "";
-    quantidadeSeries.value = "";
-
-    if (tipo.value === "musculacao" || tipo.value === "alongamento") {
-        camposSeries.style.display = "flex";
-    }
-
-    if (tipo.value === "cardio") {
-        camposCardio.style.display = "flex";
-    }
+  if (tipo.value === "musculacao" || tipo.value === "alongamento") {
+    camposSeries.style.display = "flex";
+  } else if (tipo.value === "cardio") {
+    camposCardio.style.display = "flex";
+  }
 });
 
-// Cria os campos de cada série
-quantidadeSeries.addEventListener("input", function () {
-    const quantidade = Number(quantidadeSeries.value);
+// 2. Gera dinamicamente os inputs de repetições e carga
+quantidadeSeries.addEventListener("input", () => {
+  const qtd = Number(quantidadeSeries.value);
+  listaSeries.innerHTML = "";
 
-    listaSeries.innerHTML = "";
+  if (qtd < 1 || !Number.isInteger(qtd) || qtd > 50) return;
 
-    if (quantidade < 1 || !Number.isInteger(quantidade) || quantidade > 50) {
-        return;
-    }
-
-    for (let i = 1; i <= quantidade; i++) {
-        const serie = document.createElement("div");
-        serie.classList.add("serie");
-
-        serie.innerHTML = `
-            <h3>Série ${i}</h3>
-
-            <div class="campo-serie">
-                <label for="repeticoes-${i}">Repetições</label>
-                <input
-                    type="number"
-                    id="repeticoes-${i}"
-                    min="1"
-                    placeholder="Ex: 12"
-                    required
-                >
-            </div>
-
-            <div class="campo-serie">
-                <label for="carga-${i}">Carga (kg)</label>
-                <input
-                    type="number"
-                    id="carga-${i}"
-                    min="0"
-                    step="0.5"
-                    placeholder="Ex: 20"
-                    required
-                >
-            </div>
-        `;
-
-        listaSeries.appendChild(serie);
-    }
+  for (let i = 1; i <= qtd; i++) {
+    const serie = document.createElement("div");
+    serie.classList.add("serie");
+    serie.innerHTML = `
+      <h3>Série ${i}</h3>
+      <div class="campo-serie">
+        <label for="repeticoes-${i}">Repetições</label>
+        <input type="number" id="repeticoes-${i}" min="1" placeholder="Ex: 12" required>
+      </div>
+      <div class="campo-serie">
+        <label for="carga-${i}">Carga (kg)</label>
+        <input type="number" id="carga-${i}" min="0" step="0.5" placeholder="Ex: 20" required>
+      </div>
+    `;
+    listaSeries.appendChild(serie);
+  }
 });
 
-// Salva os exercícios no navegador
-function salvarTreinos() {
-    localStorage.setItem("treinos", JSON.stringify(treinos));
+// 3. Busca os treinos salvos no banco de dados (GET)
+async function carregarTreinos() {
+  const resposta = await fetch("/api/treinos");
+  const treinos = await resposta.json();
+  mostrarTreinos(treinos);
 }
 
-// Mostra os exercícios na tela
-function mostrarTreinos() {
-    listaTreinos.innerHTML = "";
+// Renderiza a lista na tela
+function mostrarTreinos(treinos) {
+  listaTreinos.innerHTML = "";
 
-    if (treinos.length === 0) {
-        const itemVazio = document.createElement("li");
-        itemVazio.classList.add("lista-vazia");
+  if (treinos.length === 0) {
+    listaTreinos.innerHTML = `
+      <li class="lista-vazia">
+        <img src="assets/gym cinza.png" alt="Ícone de halter">
+        <p>Nenhum exercício registrado ainda.</p>
+      </li>
+    `;
+    return;
+  }
 
-        const imagem = document.createElement("img");
-        imagem.src = "assets/gym cinza.png";
-        imagem.alt = "Ícone de halter";
+  treinos.forEach((treino) => {
+    const item = document.createElement("li");
+    item.classList.add("item-treino");
 
-        const mensagem = document.createElement("p");
-        mensagem.textContent = "Nenhum exercício registrado ainda.";
+    const titulo = document.createElement("h3");
+    titulo.textContent = treino.nome;
 
-        itemVazio.appendChild(imagem);
-        itemVazio.appendChild(mensagem);
-        listaTreinos.appendChild(itemVazio);
+    const categoria = document.createElement("p");
+    categoria.textContent = treino.tipo;
 
-        return;
+    const detalhes = document.createElement("div");
+    detalhes.classList.add("detalhes-treino");
+
+    if (treino.tipo === "cardio") {
+      detalhes.textContent = `Duração: ${treino.duracao} minutos`;
+      if (treino.distancia) {
+        detalhes.textContent += ` | Distância: ${treino.distancia} km`;
+      }
+    } else if (treino.series) {
+      treino.series.forEach((serie, indice) => {
+        const linha = document.createElement("p");
+        linha.textContent = `Série ${indice + 1}: ${serie.repeticoes} repetições | ${serie.carga} kg`;
+        detalhes.appendChild(linha);
+      });
     }
 
-    treinos.forEach(function (treino) {
-        const item = document.createElement("li");
-        item.classList.add("item-treino");
+    const btnExcluir = document.createElement("button");
+    btnExcluir.type = "button";
+    btnExcluir.textContent = "Excluir";
+    btnExcluir.classList.add("btn-excluir");
 
-        const titulo = document.createElement("h3");
-        titulo.textContent = treino.nome;
-
-        const categoria = document.createElement("p");
-        categoria.textContent = treino.tipo;
-
-        const detalhes = document.createElement("div");
-        detalhes.classList.add("detalhes-treino");
-
-        if (treino.tipo === "cardio") {
-            detalhes.textContent = `Duração: ${treino.duracao} minutos`;
-
-            if (treino.distancia !== "") {
-                detalhes.textContent += ` | Distância: ${treino.distancia} km`;
-            }
-        } else {
-            treino.series.forEach(function (serie, indice) {
-                const linha = document.createElement("p");
-                linha.textContent =
-                    `Série ${indice + 1}: ${serie.repeticoes} repetições | ${serie.carga} kg`;
-
-                detalhes.appendChild(linha);
-            });
-        }
-
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.textContent = "Excluir";
-        excluir.classList.add("btn-excluir");
-
-        excluir.addEventListener("click", function () {
-            treinos = treinos.filter(function (item) {
-                return item.id !== treino.id;
-            });
-
-            salvarTreinos();
-            mostrarTreinos();
-        });
-
-        item.appendChild(titulo);
-        item.appendChild(categoria);
-        item.appendChild(detalhes);
-        item.appendChild(excluir);
-
-        listaTreinos.appendChild(item);
+    // Exclui o treino no banco de dados (DELETE)
+    btnExcluir.addEventListener("click", async () => {
+      await fetch(`/api/treinos/${treino.id}`, { method: "DELETE" });
+      carregarTreinos();
     });
+
+    item.append(titulo, categoria, detalhes, btnExcluir);
+    listaTreinos.appendChild(item);
+  });
 }
 
-// Registra um novo exercício quando o formulário é enviado
-formTreino.addEventListener("submit", function (evento) {
-    evento.preventDefault();
+// Envia o novo treino para o servidor salvar no SQLite (POST)
+formTreino.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
 
-    const novoTreino = {
-        id: Date.now(),
-        nome: nome.value.trim(),
-        tipo: tipo.options[tipo.selectedIndex].text
-            .toLowerCase(),
-        series: [],
-        duracao: "",
-        distancia: ""
-    };
+  const dadosTreino = {
+    nome: nome.value.trim(),
+    tipo: tipo.value,
+    series: [],
+    duracao: null,
+    distancia: null
+  };
 
-    if (tipo.value === "musculacao" || tipo.value === "alongamento") {
-        const quantidade = Number(quantidadeSeries.value);
+  if (tipo.value === "musculacao" || tipo.value === "alongamento") {
+    const qtd = Number(quantidadeSeries.value);
+    for (let i = 1; i <= qtd; i++) {
+      const rep = document.getElementById(`repeticoes-${i}`).value;
+      const carga = document.getElementById(`carga-${i}`).value;
 
-        if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 50) {
-            alert("Informe uma quantidade de séries entre 1 e 50.");
-            return;
-        }
-
-        for (let i = 1; i <= quantidade; i++) {
-            const repeticoes = document.getElementById(`repeticoes-${i}`);
-            const carga = document.getElementById(`carga-${i}`);
-
-            if (!repeticoes || !carga || repeticoes.value === "" || carga.value === "") {
-                alert(`Preencha as repetições e a carga da série ${i}.`);
-                return;
-            }
-
-            novoTreino.series.push({
-                repeticoes: repeticoes.value,
-                carga: carga.value
-            });
-        }
+      if (!rep || !carga) {
+        alert(`Preencha as repetições e a carga da série ${i}.`);
+        return;
+      }
+      dadosTreino.series.push({ repeticoes: Number(rep), carga: Number(carga) });
     }
+  }
 
-    if (tipo.value === "cardio") {
-        const duracao = document.getElementById("duracaoCardio").value;
-        const distancia = document.getElementById("distanciaCardio").value;
+  if (tipo.value === "cardio") {
+    const duracao = document.getElementById("duracaoCardio").value;
+    const distancia = document.getElementById("distanciaCardio").value;
 
-        if (duracao === "" || Number(duracao) < 1) {
-            alert("Informe a duração do exercício.");
-            return;
-        }
-
-        novoTreino.duracao = duracao;
-        novoTreino.distancia = distancia;
+    if (!duracao || Number(duracao) < 1) {
+      alert("Informe a duração do exercício.");
+      return;
     }
+    dadosTreino.duracao = Number(duracao);
+    dadosTreino.distancia = distancia ? Number(distancia) : null;
+  }
 
-    treinos.push(novoTreino);
+  await fetch("/api/treinos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dadosTreino)
+  });
 
-    salvarTreinos();
-    mostrarTreinos();
-
-    // Limpa o formulário depois de registrar
-    formTreino.reset();
-    camposSeries.style.display = "none";
-    camposCardio.style.display = "none";
-    listaSeries.innerHTML = "";
+  formTreino.reset();
+  camposSeries.style.display = "none";
+  camposCardio.style.display = "none";
+  listaSeries.innerHTML = "";
+  carregarTreinos();
 });
 
-// Exibe os exercícios salvos ao abrir a página
-mostrarTreinos();
+// Carrega os dados do banco assim que a página abre
+carregarTreinos();
