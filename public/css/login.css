@@ -164,8 +164,7 @@ body {
     .login-form {
         padding: 22px;
     }
-}
-@media (max-width: 600px) {
+
     body {
         background: #080C09;
     }
