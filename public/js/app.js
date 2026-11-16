@@ -1,3 +1,10 @@
+const usuarioLogado = JSON.parse(sessionStorage.getItem("usuarioLogado"));
+
+// Se não houver usuário na sessão, redireciona para o login
+if (!usuarioLogado || !usuarioLogado.id) {
+  window.location.href = "login.html";
+}
+
 const formTreino = document.getElementById("formTreino");
 const tipo = document.getElementById("tipo");
 const nome = document.getElementById("nome");
@@ -46,8 +53,9 @@ quantidadeSeries.addEventListener("input", () => {
   }
 });
 
+// Busca apenas os treinos do usuário logado
 async function carregarTreinos() {
-  const resposta = await fetch("/api/treinos");
+  const resposta = await fetch(`/api/treinos?usuarioId=${usuarioLogado.id}`);
   const treinos = await resposta.json();
   mostrarTreinos(treinos);
 }
@@ -58,7 +66,7 @@ function mostrarTreinos(treinos) {
   if (treinos.length === 0) {
     listaTreinos.innerHTML = `
       <li class="lista-vazia">
-        <img src="assets/gym cinza.png" alt="Ícone de halter">
+        <img src="../assets/gym cinza.png" alt="Ícone de halter">
         <p>Nenhum exercício registrado ainda.</p>
       </li>
     `;
@@ -106,6 +114,7 @@ function mostrarTreinos(treinos) {
   });
 }
 
+// Envia o novo treino amarrado ao ID do usuário atual
 formTreino.addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
@@ -114,7 +123,8 @@ formTreino.addEventListener("submit", async (evento) => {
     tipo: tipo.value,
     series: [],
     duracao: null,
-    distancia: null
+    distancia: null,
+    usuarioId: usuarioLogado.id
   };
 
   if (tipo.value === "musculacao" || tipo.value === "alongamento") {
@@ -139,6 +149,7 @@ formTreino.addEventListener("submit", async (evento) => {
       alert("Informe a duração do exercício.");
       return;
     }
+    duracaoCardio: Number(duracao);
     dadosTreino.duracao = Number(duracao);
     dadosTreino.distancia = distancia ? Number(distancia) : null;
   }
