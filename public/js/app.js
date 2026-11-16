@@ -9,7 +9,6 @@ const quantidadeSeries = document.getElementById("quantidadeSeries");
 const listaSeries = document.getElementById("listaSeries");
 const listaTreinos = document.getElementById("listaTreinos");
 
-// 1. Alterna os campos visíveis conforme o tipo de exercício
 tipo.addEventListener("change", () => {
   camposSeries.style.display = "none";
   camposCardio.style.display = "none";
@@ -23,7 +22,6 @@ tipo.addEventListener("change", () => {
   }
 });
 
-// 2. Gera dinamicamente os inputs de repetições e carga
 quantidadeSeries.addEventListener("input", () => {
   const qtd = Number(quantidadeSeries.value);
   listaSeries.innerHTML = "";
@@ -48,14 +46,12 @@ quantidadeSeries.addEventListener("input", () => {
   }
 });
 
-// 3. Busca os treinos salvos no banco de dados (GET)
 async function carregarTreinos() {
   const resposta = await fetch("/api/treinos");
   const treinos = await resposta.json();
   mostrarTreinos(treinos);
 }
 
-// Renderiza a lista na tela
 function mostrarTreinos(treinos) {
   listaTreinos.innerHTML = "";
 
@@ -100,7 +96,6 @@ function mostrarTreinos(treinos) {
     btnExcluir.textContent = "Excluir";
     btnExcluir.classList.add("btn-excluir");
 
-    // Exclui o treino no banco de dados (DELETE)
     btnExcluir.addEventListener("click", async () => {
       await fetch(`/api/treinos/${treino.id}`, { method: "DELETE" });
       carregarTreinos();
@@ -111,7 +106,6 @@ function mostrarTreinos(treinos) {
   });
 }
 
-// Envia o novo treino para o servidor salvar no SQLite (POST)
 formTreino.addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
@@ -162,5 +156,4 @@ formTreino.addEventListener("submit", async (evento) => {
   carregarTreinos();
 });
 
-// Carrega os dados do banco assim que a página abre
 carregarTreinos();

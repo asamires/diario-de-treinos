@@ -70,8 +70,6 @@ label {
     font-weight: bold;
 }
 
-
-/* Campos de texto e seleção */
 input,
 select {
     width: 100%;
@@ -84,7 +82,6 @@ select {
     margin-bottom: 10px;
 }
 
-/* Personalização da setinha */
 #tipo {
     appearance: none;
     -webkit-appearance: none;
@@ -130,8 +127,6 @@ li {
     color: #E5E5E5;
 }
 
-
-/* Cabeçalho */
 header {
     display: flex;
     align-items: center;
@@ -149,7 +144,6 @@ header {
     padding-left: 30px;
 }
 
-/* Área sem exercícios */
 .lista-vazia {
     display: flex;
     flex-direction: column;
@@ -165,21 +159,18 @@ header {
     object-fit: contain;
 }
 
-/* Campos adicionais escondidos */
 .grupo-campos {
     display: none;
     flex-direction: column;
     gap: 12px;
 }
 
-/* Lista de séries */
 #listaSeries {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-/*  série */
 .serie {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -195,7 +186,6 @@ header {
     font-size: 18px;
 }
 
-/* Campos da série */
 .campo-serie {
     display: flex;
     flex-direction: column;
@@ -215,7 +205,6 @@ input[type="number"] {
     width: 100%;
 }
 
-/* tamanho celular */
 @media (max-width: 600px) {
     body {
         padding: 28px 22px;
@@ -268,7 +257,6 @@ input[type="number"] {
 }
 }
 
-/*  registrados */
 .item-treino {
     display: flex;
     flex-direction: column;
@@ -290,7 +278,6 @@ input[type="number"] {
     gap: 8px;
 }
 
-/* Botão excluir */
 .btn-excluir {
     background-color: #393D39;
     color: #F5F5F5;

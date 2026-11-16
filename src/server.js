@@ -4,11 +4,9 @@ import { sequelize, Treino, Serie } from './database.js';
 const app = express();
 const PORTA = 3000;
 
-// Permite que o servidor leia JSON no corpo das requisições e sirva a pasta public
 app.use(express.json());
 app.use(express.static('public'));
 
-// Rota 1: Listar todos os treinos com as suas séries
 app.get('/api/treinos', async (req, res) => {
   try {
     const treinos = await Treino.findAll({
@@ -21,7 +19,6 @@ app.get('/api/treinos', async (req, res) => {
   }
 });
 
-// Rota 2: Criar um novo treino (e as séries, se existirem)
 app.post('/api/treinos', async (req, res) => {
   try {
     const { nome, tipo, duracao, distancia, series } = req.body;
@@ -49,7 +46,6 @@ app.post('/api/treinos', async (req, res) => {
   }
 });
 
-// Rota 3: Excluir um treino pelo ID
 app.delete('/api/treinos/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -65,7 +61,6 @@ app.delete('/api/treinos/:id', async (req, res) => {
   }
 });
 
-// Sincroniza a base de dados e inicia o servidor
 sequelize.sync().then(() => {
   app.listen(PORTA, () => {
     console.log(`Servidor ativo em http://localhost:${PORTA}`);

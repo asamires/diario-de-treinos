@@ -1,13 +1,11 @@
 import { Sequelize, DataTypes } from 'sequelize';
 
-// Cria a conexão apontando para um arquivo local chamado banco.sqlite
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: './banco.sqlite',
-  logging: false // Desliga o spam de SQL no terminal para manter o log limpo
+  logging: false 
 });
 
-// Modelo 1: Tabela de Treinos
 const Treino = sequelize.define('Treino', {
   nome: {
     type: DataTypes.STRING,
@@ -27,7 +25,6 @@ const Treino = sequelize.define('Treino', {
   }
 });
 
-// Modelo 2: Tabela de Séries
 const Serie = sequelize.define('Serie', {
   repeticoes: {
     type: DataTypes.INTEGER,
@@ -39,7 +36,6 @@ const Serie = sequelize.define('Serie', {
   }
 });
 
-// Relacionamento 1:N (Um Treino possui várias Séries)
 Treino.hasMany(Serie, { as: 'series', onDelete: 'CASCADE' });
 Serie.belongsTo(Treino);
 
