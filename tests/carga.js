@@ -13,8 +13,27 @@ export const options = {
   },
 };
 
-export default function () {
-  const res = http.get('http://localhost:3000/api/treinos');
+const BASE = 'http://localhost:3000/api';
+
+
+export function setup() {
+  const user = `k6carga${Date.now()}`;
+  const cad = http.post(`${BASE}/cadastro`, JSON.stringify({
+    nome: 'Usuario Carga',
+    dataNascimento: '2000-01-01',
+    user,
+    email: `${user}@teste.com`,
+    senha: '123456',
+    confirmarSenha: '123456'
+  }), { headers: { 'Content-Type': 'application/json' } });
+
+  check(cad, { 'cadastro retornou 201': (r) => r.status === 201 });
+  return { usuarioId: cad.json('id') };
+}
+
+
+export default function (data) {
+  const res = http.get(`${BASE}/treinos?usuarioId=${data.usuarioId}`);
 
   check(res, {
     'Status 200 OK': (r) => r.status === 200,
